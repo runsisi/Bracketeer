@@ -11,6 +11,8 @@
 package com.chookapp.org.bracketeer.cdt;
 
 import java.util.EmptyStackException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 
 import org.eclipse.cdt.core.dom.ast.ASTVisitor;
@@ -37,6 +39,7 @@ import org.eclipse.cdt.core.dom.ast.IASTStatement;
 import org.eclipse.cdt.core.dom.ast.IASTSwitchStatement;
 import org.eclipse.cdt.core.dom.ast.IASTWhileStatement;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTIfStatement;
+import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTNameSpecifier;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTNamedTypeSpecifier;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTQualifiedName;
 import org.eclipse.cdt.core.dom.ast.cpp.ICPPASTTemplateId;
@@ -457,10 +460,24 @@ public class ClosingBracketHintVisitor extends ASTVisitor
         } 
         else if( name instanceof ICPPASTQualifiedName)
         {
-            IASTName[] names = ((ICPPASTQualifiedName) name).getNames();
+            List<IASTName> names = getNames((ICPPASTQualifiedName) name);
             for (IASTName n : names)
                 addBrackets(n);
         }        
+    }
+
+    private List<IASTName> getNames(ICPPASTQualifiedName qualifiedName) {
+        final IASTName lastName = qualifiedName.getLastName();
+        final List<IASTName> names = new ArrayList<IASTName>();
+        for (ICPPASTNameSpecifier name : qualifiedName.getQualifier()) {
+            if (name instanceof IASTName) {
+                names.add((IASTName) name);
+            }
+        }
+        if (lastName != null) {
+            names.add(lastName);
+        }
+        return names;
     }
 
     private void addBrackets(IASTNode[] args) throws BadLocationException
